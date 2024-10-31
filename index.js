@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = 5000;
@@ -29,7 +29,6 @@ async function run() {
     // ! assignments get for all data
     app.get("/assignments", async (req, res) => {
       const { email } = req.query;
-      console.log(email);
       let query = {};
       if (email) {
         query = { "user.userEmail": email };
@@ -37,10 +36,35 @@ async function run() {
       const result = await assignmentsCollection.find(query).toArray();
       res.send(result);
     });
+    // ! assignments details
+    app.get("/assignments/details/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignmentsCollection.findOne(query);
+      res.send(result);
+    });
     // ! create a single assignment
     app.post("/assignment", async (req, res) => {
       const assingment = req.body;
       const result = await assignmentsCollection.insertOne({ ...assingment });
+      res.send(result);
+    });
+    // ! ASSIGNMENT DELETE
+    app.delete("/assignments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignmentsCollection.deleteOne(query);
+      res.send(result);
+    });
+    // ! ASSIGNMENT update
+    app.patch("/assignments/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const doc = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { ...doc },
+      };
+      const result = await assignmentsCollection.updateOne(query, updateDoc);
       res.send(result);
     });
     // Send a ping to confirm a successful connection
