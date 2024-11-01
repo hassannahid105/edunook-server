@@ -26,6 +26,9 @@ async function run() {
     // Get the database and collection on which to run the operation
     const database = client.db("edunook");
     const assignmentsCollection = database.collection("assignments");
+    const submittedAssignmentsCollection = database.collection(
+      "submittedAssignments"
+    );
     // ! assignments get for all data
     app.get("/assignments", async (req, res) => {
       const { email } = req.query;
@@ -65,6 +68,15 @@ async function run() {
         $set: { ...doc },
       };
       const result = await assignmentsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+    // ! assignment submit
+    app.post("/submittedassignments", async (req, res) => {
+      //
+      const submittedAssignments = req.body;
+      const result = await submittedAssignmentsCollection.insertOne({
+        ...submittedAssignments,
+      });
       res.send(result);
     });
     // Send a ping to confirm a successful connection
