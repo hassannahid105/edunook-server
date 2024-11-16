@@ -31,10 +31,13 @@ async function run() {
     );
     // ! assignments get for all data
     app.get("/assignments", async (req, res) => {
-      const { email } = req.query;
+      const { email, difficulty } = req.query;
       let query = {};
       if (email) {
         query = { "user.userEmail": email };
+      }
+      if (difficulty) {
+        query = { difficulty: difficulty };
       }
       const result = await assignmentsCollection.find(query).toArray();
       res.send(result);
