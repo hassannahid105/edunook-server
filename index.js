@@ -9,8 +9,8 @@ app.use(cors());
 app.use(express.json());
 // ! mongodb uri
 // ${process.env.MONGODB_USER}
-const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0.ovfeh1r.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-
+// const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0.ovfeh1r.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0.gw9o5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -71,6 +71,22 @@ async function run() {
         $set: { ...doc },
       };
       const result = await assignmentsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+    // ! Marking assingment update
+    app.patch("/assignments/marks/:id", async (req, res) => {
+      const id = req.params.id;
+      const doc = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: { ...doc },
+      };
+      const result = await submittedAssignmentsCollection.updateOne(
+        query,
+        updateDoc,
+        options
+      );
       res.send(result);
     });
     // ! assignment submit
