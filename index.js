@@ -91,10 +91,21 @@ async function run() {
     });
     // ! assignment submit
     app.post("/submittedassignments", async (req, res) => {
-      //
-      const submittedAssignments = req.body;
+      // Check if the email and assignment  exists
+      const doc = req.body;
+      const query = {
+        examinerEmail: doc.examinerEmail,
+        assignmentId: doc.assignmentId,
+      };
+      const alreadyTaken = await submittedAssignmentsCollection
+        .find(query)
+        .toArray();
+      console.log(alreadyTaken.length);
+      if (alreadyTaken.length > 0) {
+        return res.send({ status: "unauthorized" });
+      }
       const result = await submittedAssignmentsCollection.insertOne({
-        ...submittedAssignments,
+        ...doc,
       });
       res.send(result);
     });
