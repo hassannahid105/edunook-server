@@ -42,6 +42,8 @@ async function run() {
       const result = await assignmentsCollection.find(query).toArray();
       res.send(result);
     });
+    // get email for submitting data
+
     // ! assignments details
     app.get("/assignments/details/:id", async (req, res) => {
       const id = req.params.id;
@@ -100,7 +102,6 @@ async function run() {
       const alreadyTaken = await submittedAssignmentsCollection
         .find(query)
         .toArray();
-      console.log(alreadyTaken.length);
       if (alreadyTaken.length > 0) {
         return res.send({ status: "unauthorized" });
       }
@@ -111,9 +112,16 @@ async function run() {
     });
     // ! get all submited assigment
     app.get("/allsubmited", async (req, res) => {
-      const result = await submittedAssignmentsCollection.find().toArray();
+      const { email } = req.query;
+      let query = {};
+      if (email) {
+        query = { "examinee.examineeEmail": email };
+      }
+
+      const result = await submittedAssignmentsCollection.find(query).toArray();
       res.send(result);
     });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
