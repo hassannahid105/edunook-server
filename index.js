@@ -8,8 +8,6 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 // ! mongodb uri
-// ${process.env.MONGODB_USER}
-// const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0.ovfeh1r.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0.gw9o5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -95,16 +93,20 @@ async function run() {
     app.post("/submittedassignments", async (req, res) => {
       // Check if the email and assignment  exists
       const doc = req.body;
-      const query = {
-        examinerEmail: doc.examinerEmail,
-        assignmentId: doc.assignmentId,
-      };
-      const alreadyTaken = await submittedAssignmentsCollection
-        .find(query)
-        .toArray();
-      if (alreadyTaken.length > 0) {
-        return res.send({ status: "unauthorized" });
+      // ! duplicate assignment not allowed
+      let query = {};
+
+      if (doc.examinee) {
+        const alreadyTaken = await submittedAssignmentsCollection.findOne({
+          "examinee.examineeEmail": doc.examinee.examineeEmail,
+          assignmentId: doc.assignmentId,
+        });
+        console.log("alreadyTaken", alreadyTaken);
+        if (alreadyTaken) {
+          return res.send({ status: "unauthorized" });
+        }
       }
+
       const result = await submittedAssignmentsCollection.insertOne({
         ...doc,
       });
@@ -112,6 +114,16 @@ async function run() {
     });
     // ! get all submited assigment
     app.get("/allsubmited", async (req, res) => {
+      const { email } = req.query;
+      let query = {};
+      if (email) {
+        query = { examiner: email };
+      }
+
+      const result = await submittedAssignmentsCollection.find(query).toArray();
+      res.send(result);
+    });
+    app.get("/submited", async (req, res) => {
       const { email } = req.query;
       let query = {};
       if (email) {
