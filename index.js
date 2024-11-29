@@ -3,9 +3,10 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 // ** middleware
 app.use(cors());
+
 app.use(express.json());
 // ! mongodb uri
 const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0.gw9o5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -20,7 +21,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     // Get the database and collection on which to run the operation
     const database = client.db("edunook");
     const assignmentsCollection = database.collection("assignments");
@@ -133,12 +133,6 @@ async function run() {
       const result = await submittedAssignmentsCollection.find(query).toArray();
       res.send(result);
     });
-
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
   } finally {
     // Ensures that the client will close when you finish/error
   }
